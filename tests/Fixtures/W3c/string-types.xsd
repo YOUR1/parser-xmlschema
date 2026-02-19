@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://example.org/test/string-types">
+
+    <!-- Custom string type with minLength and maxLength restrictions -->
+    <xs:simpleType name="ShortName">
+        <xs:annotation>
+            <xs:documentation>A short name between 1 and 50 characters</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+            <xs:maxLength value="50"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Custom string type with pattern restriction -->
+    <xs:simpleType name="ProductCode">
+        <xs:annotation>
+            <xs:documentation>A product code matching pattern ABC-1234</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[A-Z]{3}-[0-9]{4}"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Custom string type with exact length -->
+    <xs:simpleType name="CountryCode">
+        <xs:annotation>
+            <xs:documentation>ISO 3166-1 alpha-2 country code</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:length value="2"/>
+            <xs:pattern value="[A-Z]{2}"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

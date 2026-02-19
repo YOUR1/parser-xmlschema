@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://example.org/test/temporal-types">
+
+    <!-- Custom dateTime restriction for future dates only -->
+    <xs:simpleType name="FutureDateTime">
+        <xs:annotation>
+            <xs:documentation>A dateTime value restricted to future dates</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:dateTime">
+            <xs:minInclusive value="2024-01-01T00:00:00Z"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Custom date restriction for a specific year range -->
+    <xs:simpleType name="ModernDate">
+        <xs:annotation>
+            <xs:documentation>A date between 2000-01-01 and 2099-12-31</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:date">
+            <xs:minInclusive value="2000-01-01"/>
+            <xs:maxInclusive value="2099-12-31"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Custom duration with pattern restriction -->
+    <xs:simpleType name="WorkDuration">
+        <xs:annotation>
+            <xs:documentation>A duration limited to hours and minutes</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:duration">
+            <xs:pattern value="PT[0-9]{1,2}H[0-9]{1,2}M"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

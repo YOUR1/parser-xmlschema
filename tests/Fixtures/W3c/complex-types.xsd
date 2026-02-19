@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://example.org/test/complex-types">
+
+    <!-- Complex type with sequence of elements -->
+    <xs:complexType name="Person">
+        <xs:annotation>
+            <xs:documentation>A person with name, age, and email</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="firstName" type="xs:string"/>
+            <xs:element name="lastName" type="xs:string"/>
+            <xs:element name="age" type="xs:integer" minOccurs="0"/>
+            <xs:element name="email" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Complex type with attributes -->
+    <xs:complexType name="Address">
+        <xs:annotation>
+            <xs:documentation>A postal address structure</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="street" type="xs:string"/>
+            <xs:element name="city" type="xs:string"/>
+            <xs:element name="postalCode" type="xs:string"/>
+        </xs:sequence>
+        <xs:attribute name="country" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <!-- Complex type with choice compositor -->
+    <xs:complexType name="ContactMethod">
+        <xs:annotation>
+            <xs:documentation>Either a phone number or email address</xs:documentation>
+        </xs:annotation>
+        <xs:choice>
+            <xs:element name="phone" type="xs:string"/>
+            <xs:element name="email" type="xs:string"/>
+        </xs:choice>
+    </xs:complexType>
+
+</xs:schema>

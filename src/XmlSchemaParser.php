@@ -1,16 +1,20 @@
 <?php
 
-namespace App\Services\Ontology\Parsers;
+declare(strict_types=1);
 
-use App\Services\Ontology\Exceptions\OntologyImportException;
+namespace Youri\vandenBogert\Software\ParserXmlSchema;
+
+use Youri\vandenBogert\Software\ParserCore\Contracts\OntologyParserInterface;
+use Youri\vandenBogert\Software\ParserCore\Exceptions\ParseException;
+use Youri\vandenBogert\Software\ParserCore\ValueObjects\ParsedOntology;
 
 class XmlSchemaParser implements OntologyParserInterface
 {
     /**
-     * XML Schema datatypes that should be treated as RDF classes
+     * @var array<string, string>
      */
     private const XSD_DATATYPES = [
-        // Primitive datatypes
+        // 19 Primitive datatypes
         'string' => 'The string datatype represents character strings in XML',
         'boolean' => 'Boolean represents the values of two-valued logic: true, false',
         'decimal' => 'Decimal represents a subset of the real numbers',
@@ -30,8 +34,7 @@ class XmlSchemaParser implements OntologyParserInterface
         'anyURI' => 'anyURI represents a Uniform Resource Identifier Reference (URI)',
         'QName' => 'QName represents XML qualified names',
         'NOTATION' => 'NOTATION represents the NOTATION attribute type from [XML]',
-
-        // Derived datatypes
+        // 25 Derived datatypes
         'normalizedString' => 'normalizedString represents white space normalized strings',
         'token' => 'Token represents tokenized strings',
         'language' => 'Language represents natural language identifiers',
@@ -60,7 +63,7 @@ class XmlSchemaParser implements OntologyParserInterface
     ];
 
     /**
-     * Hierarchy of XML Schema datatypes
+     * @var array<string, string>
      */
     private const XSD_HIERARCHY = [
         'normalizedString' => 'string',
@@ -90,44 +93,43 @@ class XmlSchemaParser implements OntologyParserInterface
         'positiveInteger' => 'nonNegativeInteger',
     ];
 
-    public function parse(string $content, array $options = []): array
+    public function parse(string $content, array $options = []): ParsedOntology
     {
         try {
-            // Parse XML content
             $xml = simplexml_load_string($content);
             if ($xml === false) {
-                throw new OntologyImportException('Invalid XML Schema content');
+                throw new ParseException('Invalid XML Schema content');
             }
 
-            // Register XML Schema namespace
             $xml->registerXPathNamespace('xs', 'http://www.w3.org/2001/XMLSchema');
 
-            // Generate RDF classes for all XSD datatypes
             $classes = $this->generateDatatypeClasses();
-
-            // Extract any additional types defined in the schema
             $additionalClasses = $this->extractAdditionalTypes($xml);
             $classes = array_merge($classes, $additionalClasses);
 
-            return [
-                'metadata' => [
+            return new ParsedOntology(
+                classes: $this->indexByUri($classes),
+                properties: [],
+                prefixes: [
+                    'xsd' => 'http://www.w3.org/2001/XMLSchema#',
+                    'xs' => 'http://www.w3.org/2001/XMLSchema#',
+                ],
+                shapes: [],
+                restrictions: [],
+                metadata: [
                     'format' => 'xml_schema',
                     'resource_count' => count($classes),
                     'parser' => 'xml_schema',
                     'namespace' => 'http://www.w3.org/2001/XMLSchema#',
                 ],
-                'prefixes' => [
-                    'xsd' => 'http://www.w3.org/2001/XMLSchema#',
-                    'xs' => 'http://www.w3.org/2001/XMLSchema#',
-                ],
-                'classes' => $classes,
-                'properties' => [], // XML Schema doesn't define RDF properties
-                'shapes' => [],
-                'raw_content' => $content,
-            ];
-
+                rawContent: $content,
+            );
         } catch (\Exception $e) {
-            throw new OntologyImportException('XML Schema parsing failed: '.$e->getMessage(), 0, $e);
+            throw new ParseException(
+                'XML Schema parsing failed: ' . $e->getMessage(),
+                0,
+                $e,
+            );
         }
     }
 
@@ -135,19 +137,21 @@ class XmlSchemaParser implements OntologyParserInterface
     {
         $content = trim($content);
 
-        // Check if it's an XML Schema document
         return str_starts_with($content, '<?xml') &&
-                (str_contains($content, 'http://www.w3.org/2001/XMLSchema') ||
-                 str_contains($content, 'targetNamespace="http://www.w3.org/2001/XMLSchema"'));
+            (str_contains($content, 'http://www.w3.org/2001/XMLSchema') ||
+             str_contains($content, 'targetNamespace="http://www.w3.org/2001/XMLSchema"'));
     }
 
+    /**
+     * @return list<string>
+     */
     public function getSupportedFormats(): array
     {
         return ['xml_schema', 'xsd'];
     }
 
     /**
-     * Generate RDF classes for all known XML Schema datatypes
+     * @return list<array<string, mixed>>
      */
     private function generateDatatypeClasses(): array
     {
@@ -155,15 +159,15 @@ class XmlSchemaParser implements OntologyParserInterface
         $baseUri = 'http://www.w3.org/2001/XMLSchema#';
 
         foreach (self::XSD_DATATYPES as $datatype => $description) {
+            /** @var list<string> $parentClasses */
             $parentClasses = [];
 
-            // Add parent class if there's a hierarchy
             if (isset(self::XSD_HIERARCHY[$datatype])) {
-                $parentClasses[] = $baseUri.self::XSD_HIERARCHY[$datatype];
+                $parentClasses[] = $baseUri . self::XSD_HIERARCHY[$datatype];
             }
 
             $classes[] = [
-                'uri' => $baseUri.$datatype,
+                'uri' => $baseUri . $datatype,
                 'label' => $datatype,
                 'description' => $description,
                 'parent_classes' => $parentClasses,
@@ -179,40 +183,39 @@ class XmlSchemaParser implements OntologyParserInterface
     }
 
     /**
-     * Extract any additional types defined in the XML Schema
+     * @return list<array<string, mixed>>
      */
     private function extractAdditionalTypes(\SimpleXMLElement $xml): array
     {
         $classes = [];
 
-        // Look for complex types and simple types defined in the schema
         $simpleTypes = $xml->xpath('//xs:simpleType[@name]');
         $complexTypes = $xml->xpath('//xs:complexType[@name]');
 
         foreach (array_merge($simpleTypes ?: [], $complexTypes ?: []) as $type) {
             $name = (string) $type['name'];
-            if (empty($name)) {
+            if ($name === '') {
                 continue;
             }
 
-            $uri = 'http://www.w3.org/2001/XMLSchema#'.$name;
+            $uri = 'http://www.w3.org/2001/XMLSchema#' . $name;
 
-            // Get documentation if available
             $documentation = '';
             $docElements = $type->xpath('.//xs:documentation');
-            if (! empty($docElements)) {
-                $documentation = (string) $docElements[0];
+            if (is_array($docElements) && $docElements !== []) {
+                $firstDoc = reset($docElements);
+                $documentation = (string) $firstDoc;
             }
 
             $classes[] = [
                 'uri' => $uri,
                 'label' => $name,
-                'description' => $documentation ?: "XML Schema type: $name",
+                'description' => $documentation !== '' ? $documentation : "XML Schema type: {$name}",
                 'parent_classes' => [],
                 'metadata' => [
                     'source' => 'xml_schema',
                     'category' => 'schema_defined',
-                    'type_kind' => $type->getName(), // simpleType or complexType
+                    'type_kind' => $type->getName(),
                 ],
             ];
         }
@@ -220,32 +223,26 @@ class XmlSchemaParser implements OntologyParserInterface
         return $classes;
     }
 
-    /**
-     * Determine if a datatype is primitive or derived
-     */
     private function isPrimitiveType(string $datatype): bool
     {
-        return ! isset(self::XSD_HIERARCHY[$datatype]);
+        return !isset(self::XSD_HIERARCHY[$datatype]);
     }
 
-    /**
-     * Categorize datatypes by their nature
-     */
     private function getDatatypeCategory(string $datatype): string
     {
-        if (in_array($datatype, ['string', 'normalizedString', 'token', 'language', 'Name', 'NCName', 'ID', 'IDREF', 'ENTITY'])) {
+        if (in_array($datatype, ['string', 'normalizedString', 'token', 'language', 'Name', 'NCName', 'ID', 'IDREF', 'ENTITY'], true)) {
             return 'string';
         }
 
-        if (in_array($datatype, ['decimal', 'integer', 'float', 'double', 'long', 'int', 'short', 'byte', 'nonNegativeInteger', 'positiveInteger', 'nonPositiveInteger', 'negativeInteger', 'unsignedLong', 'unsignedInt', 'unsignedShort', 'unsignedByte'])) {
+        if (in_array($datatype, ['decimal', 'integer', 'float', 'double', 'long', 'int', 'short', 'byte', 'nonNegativeInteger', 'positiveInteger', 'nonPositiveInteger', 'negativeInteger', 'unsignedLong', 'unsignedInt', 'unsignedShort', 'unsignedByte'], true)) {
             return 'numeric';
         }
 
-        if (in_array($datatype, ['dateTime', 'date', 'time', 'duration', 'gYear', 'gYearMonth', 'gMonth', 'gMonthDay', 'gDay'])) {
+        if (in_array($datatype, ['dateTime', 'date', 'time', 'duration', 'gYear', 'gYearMonth', 'gMonth', 'gMonthDay', 'gDay'], true)) {
             return 'temporal';
         }
 
-        if (in_array($datatype, ['hexBinary', 'base64Binary'])) {
+        if (in_array($datatype, ['hexBinary', 'base64Binary'], true)) {
             return 'binary';
         }
 
@@ -254,5 +251,20 @@ class XmlSchemaParser implements OntologyParserInterface
         }
 
         return 'other';
+    }
+
+    /**
+     * @param list<array<string, mixed>> $classes
+     * @return array<string, array<string, mixed>>
+     */
+    private function indexByUri(array $classes): array
+    {
+        $indexed = [];
+        foreach ($classes as $class) {
+            /** @var string $uri */
+            $uri = $class['uri'];
+            $indexed[$uri] = $class;
+        }
+        return $indexed;
     }
 }

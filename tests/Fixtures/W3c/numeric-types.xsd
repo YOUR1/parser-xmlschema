@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://example.org/test/numeric-types">
+
+    <!-- Custom integer type with min/max inclusive restrictions -->
+    <xs:simpleType name="Percentage">
+        <xs:annotation>
+            <xs:documentation>An integer percentage value between 0 and 100</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:integer">
+            <xs:minInclusive value="0"/>
+            <xs:maxInclusive value="100"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Custom decimal type with totalDigits and fractionDigits -->
+    <xs:simpleType name="Price">
+        <xs:annotation>
+            <xs:documentation>A monetary price with up to 2 decimal places</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:decimal">
+            <xs:totalDigits value="10"/>
+            <xs:fractionDigits value="2"/>
+            <xs:minInclusive value="0"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Custom integer type with min/max exclusive restrictions -->
+    <xs:simpleType name="PositiveScore">
+        <xs:annotation>
+            <xs:documentation>A score strictly between 0 and 1000</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:integer">
+            <xs:minExclusive value="0"/>
+            <xs:maxExclusive value="1000"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

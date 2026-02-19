@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://example.org/test/documentation-types">
+
+    <!-- Type with xs:documentation -->
+    <xs:simpleType name="DocumentedType">
+        <xs:annotation>
+            <xs:documentation>This type has explicit documentation</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string"/>
+    </xs:simpleType>
+
+    <!-- Type without any documentation or annotation -->
+    <xs:simpleType name="UndocumentedType">
+        <xs:restriction base="xs:string"/>
+    </xs:simpleType>
+
+    <!-- Type with empty documentation element -->
+    <xs:simpleType name="EmptyDocType">
+        <xs:annotation>
+            <xs:documentation></xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string"/>
+    </xs:simpleType>
+
+    <!-- Complex type with documentation -->
+    <xs:complexType name="DocumentedComplexType">
+        <xs:annotation>
+            <xs:documentation>A documented complex type</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="value" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- Type with multiple documentation elements -->
+    <xs:simpleType name="MultiDocType">
+        <xs:annotation>
+            <xs:documentation>First documentation block</xs:documentation>
+            <xs:documentation>Second documentation block</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string"/>
+    </xs:simpleType>
+
+</xs:schema>

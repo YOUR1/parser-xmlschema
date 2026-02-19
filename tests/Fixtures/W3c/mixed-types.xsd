@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://example.org/test/mixed-types">
+
+    <!-- Simple types and complex types together -->
+    <xs:simpleType name="Email">
+        <xs:annotation>
+            <xs:documentation>An email address pattern</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[^@]+@[^@]+\.[^@]+"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="PhoneNumber">
+        <xs:annotation>
+            <xs:documentation>A phone number with digits and hyphens</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9\-\+\(\) ]+"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="ContactInfo">
+        <xs:annotation>
+            <xs:documentation>Contact information structure</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="email" type="xs:string" minOccurs="0"/>
+            <xs:element name="phone" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="ZipCode">
+        <xs:annotation>
+            <xs:documentation>US zip code format</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9]{5}(-[0-9]{4})?"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="MailingAddress">
+        <xs:annotation>
+            <xs:documentation>A mailing address structure</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="street" type="xs:string"/>
+            <xs:element name="city" type="xs:string"/>
+            <xs:element name="state" type="xs:string"/>
+            <xs:element name="zip" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+
+</xs:schema>

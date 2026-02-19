@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://example.org/test/restriction-types">
+
+    <!-- String with length facet -->
+    <xs:simpleType name="FixedLengthCode">
+        <xs:annotation>
+            <xs:documentation>A code with exactly 8 characters</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:length value="8"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- String with whiteSpace facet -->
+    <xs:simpleType name="CollapsedString">
+        <xs:annotation>
+            <xs:documentation>A string with collapsed whitespace</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:whiteSpace value="collapse"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Decimal with totalDigits facet -->
+    <xs:simpleType name="SmallDecimal">
+        <xs:annotation>
+            <xs:documentation>A decimal with at most 5 total digits</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:decimal">
+            <xs:totalDigits value="5"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Multiple combined facets -->
+    <xs:simpleType name="StrictCode">
+        <xs:annotation>
+            <xs:documentation>A code combining length, pattern, and whitespace facets</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:minLength value="3"/>
+            <xs:maxLength value="10"/>
+            <xs:pattern value="[A-Z0-9]+"/>
+            <xs:whiteSpace value="collapse"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

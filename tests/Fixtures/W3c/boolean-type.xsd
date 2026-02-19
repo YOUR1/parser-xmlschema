@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://example.org/test/boolean-type">
+
+    <!-- Element using boolean type directly -->
+    <xs:complexType name="FeatureFlags">
+        <xs:annotation>
+            <xs:documentation>A set of boolean feature flags</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="enabled" type="xs:boolean"/>
+            <xs:element name="visible" type="xs:boolean"/>
+            <xs:element name="deprecated" type="xs:boolean"/>
+        </xs:sequence>
+    </xs:complexType>
+
+</xs:schema>

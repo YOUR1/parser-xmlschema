@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://example.org/test/enumeration-types">
+
+    <!-- String-based enumeration -->
+    <xs:simpleType name="Color">
+        <xs:annotation>
+            <xs:documentation>An enumeration of basic colors</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="red"/>
+            <xs:enumeration value="green"/>
+            <xs:enumeration value="blue"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- Integer-based enumeration -->
+    <xs:simpleType name="Priority">
+        <xs:annotation>
+            <xs:documentation>Priority level as enumerated integers</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:integer">
+            <xs:enumeration value="1"/>
+            <xs:enumeration value="2"/>
+            <xs:enumeration value="3"/>
+            <xs:enumeration value="4"/>
+            <xs:enumeration value="5"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- String enumeration with mixed case values -->
+    <xs:simpleType name="DayOfWeek">
+        <xs:annotation>
+            <xs:documentation>Days of the week</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Monday"/>
+            <xs:enumeration value="Tuesday"/>
+            <xs:enumeration value="Wednesday"/>
+            <xs:enumeration value="Thursday"/>
+            <xs:enumeration value="Friday"/>
+            <xs:enumeration value="Saturday"/>
+            <xs:enumeration value="Sunday"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>
