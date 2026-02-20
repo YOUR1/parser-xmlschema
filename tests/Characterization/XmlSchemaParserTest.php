@@ -162,8 +162,8 @@ describe('XmlSchemaParser', function () use ($findClass, $minimalXsd) {
         it('has exactly 6 top-level keys', function () use ($minimalXsd) {
             $result = $this->parser->parse($minimalXsd);
             expect($result)->toHaveProperties(['metadata', 'prefixes', 'classes', 'properties', 'shapes', 'rawContent']);
-            // ParsedOntology has 7 properties: classes, properties, prefixes, shapes, restrictions, metadata, rawContent
-            expect((new \ReflectionClass($result))->getProperties())->toHaveCount(7);
+            // ParsedOntology has 8 properties: classes, properties, prefixes, shapes, restrictions, metadata, rawContent, graphs
+            expect((new \ReflectionClass($result))->getProperties())->toHaveCount(8);
         });
 
         // 4.3
@@ -804,8 +804,8 @@ describe('XmlSchemaParser', function () use ($findClass, $minimalXsd) {
             expect($class['metadata']['source'])->toBe('xml_schema');
         });
 
-        // 9.7
-        it('has empty parent_classes for extracted types', function () use ($findClass) {
+        // 9.7 (updated by Story 15.2): parent_classes now populated from restriction base
+        it('has parent_classes populated from restriction base for simple types', function () use ($findClass) {
             $content = '<?xml version="1.0"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
     <xs:simpleType name="MyType">
@@ -815,7 +815,7 @@ describe('XmlSchemaParser', function () use ($findClass, $minimalXsd) {
 
             $result = $this->parser->parse($content);
             $class = $findClass($result->classes, 'http://www.w3.org/2001/XMLSchema#MyType');
-            expect($class['parent_classes'])->toBe([]);
+            expect($class['parent_classes'])->toBe(['http://www.w3.org/2001/XMLSchema#string']);
         });
 
         // 9.8
@@ -1267,11 +1267,10 @@ describe('XmlSchemaParser', function () use ($findClass, $minimalXsd) {
             expect($class['label'])->toBe('XsdPrefixType');
         });
 
-        // 12.3b (review addition): documentation sub-XPath falls back when document uses xsd: prefix
-        it('falls back to default description for xsd: prefix schemas because sub-XPath .//xs:documentation fails', function () use ($findClass) {
-            // The registerXPathNamespace('xs', ...) only works on the root element's XPath context.
-            // When the document uses 'xsd:' prefix, the child-level sub-XPath './/xs:documentation'
-            // produces a warning and returns empty, causing the fallback description to be used.
+        // 12.3b (updated by Story 15.1): documentation now works for xsd: prefix schemas
+        it('extracts documentation from xsd: prefix schemas after namespace registration fix', function () use ($findClass) {
+            // Story 15.1 fixed sub-XPath queries by registering namespace on child elements.
+            // Documentation is now correctly extracted regardless of document prefix.
             $content = '<?xml version="1.0"?>
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
     <xsd:simpleType name="DocTestType">
@@ -1285,8 +1284,8 @@ describe('XmlSchemaParser', function () use ($findClass, $minimalXsd) {
             $result = $this->parser->parse($content);
             $class = $findClass($result->classes, 'http://www.w3.org/2001/XMLSchema#DocTestType');
             expect($class)->not->toBeNull();
-            // Documentation falls back because .//xs:documentation sub-XPath fails with xsd: prefix
-            expect($class['description'])->toBe('XML Schema type: DocTestType');
+            // Documentation is now correctly extracted after Story 15.1 fix
+            expect($class['description'])->toBe('This documentation should NOT be extracted');
         });
 
         // 12.4
